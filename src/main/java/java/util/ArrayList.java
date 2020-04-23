@@ -177,8 +177,7 @@ public class ArrayList<E> extends AbstractList<E>
 
     /**
      * 扩容  此时所需最小容量并不确定
-     * MARK:
-     * 只要是涉及需要增加容量的方法 都会调用该方法
+     * MARK: 只要是涉及需要增加容量的方法 都会调用该方法
      * @param minCapacity
      */
     private void ensureCapacityInternal(int minCapacity) {
@@ -342,34 +341,20 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Returns an array containing all of the elements in this list in proper
-     * sequence (from first to last element); the runtime type of the returned
-     * array is that of the specified array.  If the list fits in the
-     * specified array, it is returned therein.  Otherwise, a new array is
-     * allocated with the runtime type of the specified array and the size of
-     * this list.
+     * MARK:
+     * 这里有个坑，当传入的a数组容量大于列表数组容量时会把列表数组copy到数组a，并将数组a[size]置为null
+     * 但是当数组a的容量小于列表数组容量时，就跟a数组没有关系了，会将列表数组copy到新的数组中去返回
      *
-     * <p>If the list fits in the specified array with room to spare
-     * (i.e., the array has more elements than the list), the element in
-     * the array immediately following the end of the collection is set to
-     * <tt>null</tt>.  (This is useful in determining the length of the
-     * list <i>only</i> if the caller knows that the list does not contain
-     * any null elements.)
-     *
-     * @param a the array into which the elements of the list are to
-     *          be stored, if it is big enough; otherwise, a new array of the
-     *          same runtime type is allocated for this purpose.
-     * @return an array containing the elements of the list
-     * @throws ArrayStoreException if the runtime type of the specified array
-     *         is not a supertype of the runtime type of every element in
-     *         this list
-     * @throws NullPointerException if the specified array is null
+     * @param a
+     * @throws ArrayStoreException 数组elementData储存的类型与a数组类型不相符时抛该异常
+     * @throws NullPointerException a数组为空时抛异常
      */
     @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] a) {
         if (a.length < size)
-            // Make a new array of a's runtime type, but my contents:
+            // 当a的长度小于size时，创建一个新数组
             return (T[]) Arrays.copyOf(elementData, size, a.getClass());
+        // 当a数组长度大于size时，也就是a够装elementData时，则将elementData 拷贝到a，并将a[size]=null
         System.arraycopy(elementData, 0, a, 0, size);
         if (a.length > size)
             a[size] = null;
@@ -391,8 +376,9 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E get(int index) {
+        // 判断是否下表越界
         rangeCheck(index);
-
+        // MARK: 这里可以看出 读取指定位置数据效率高
         return elementData(index);
     }
 
@@ -406,30 +392,30 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E set(int index, E element) {
+        // 插入到指定位置时 也要判断是否下表越界
         rangeCheck(index);
 
         E oldValue = elementData(index);
+        // MARK: 这里可以看出 插入指定位置效率会很高
         elementData[index] = element;
         return oldValue;
     }
 
     /**
-     * Appends the specified element to the end of this list.
+     * MARK: 数组与链表的比较 是插入和删除数据效率低 ，这里可以看出，尾部追加的话效率不会影响，与链表相比就是增加了一个扩容的逻辑，因为数组的长度是固定的，容量不足时需要扩容
      *
      * @param e element to be appended to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})
      */
     public boolean add(E e) {
-        // 扩容判断
+        // MARK:扩容判断  每次增加元素都是 size+1  然后再走扩容流程
         ensureCapacityInternal(size + 1);  // Increments modCount!!
         elementData[size++] = e;
         return true;
     }
 
     /**
-     * Inserts the specified element at the specified position in this
-     * list. Shifts the element currently at that position (if any) and
-     * any subsequent elements to the right (adds one to their indices).
+     * MARK: 这里可以看出数组插入数据效率低，插入位置开始到最后元素都要像右移动，且还有一个扩容流程
      *
      * @param index index at which the specified element is to be inserted
      * @param element element to be inserted
@@ -450,7 +436,7 @@ public class ArrayList<E> extends AbstractList<E>
      * MARK:
      * 将位置index+1位置后元素左移，然后再将最后一个设为null 等待GC 达到移除的效果
      *  可以看出，删除一个元素 并没有自动缩容，ArrayList只会扩容 不会缩容，所以列表的容量不能随意指定，浪费内存
-     *
+     * 所谓的删除效率比链表低就是这个意思，每次删除一个元素 所有之后的元素都需要像左移动
      * @param index the index of the element to be removed
      * @return the element that was removed from the list
      * @throws IndexOutOfBoundsException {@inheritDoc}
@@ -470,14 +456,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Removes the first occurrence of the specified element from this list,
-     * if it is present.  If the list does not contain the element, it is
-     * unchanged.  More formally, removes the element with the lowest index
-     * <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>
-     * (if such an element exists).  Returns <tt>true</tt> if this list
-     * contained the specified element (or equivalently, if this list
-     * changed as a result of the call).
+     * MARK: 删除匹配的索引最低的元素  其实所谓的安全删除问题不太严谨 JDK注释都说了这个方法是删除匹配的索引最低的元素
      *
      * @param o element to be removed from this list, if present
      * @return <tt>true</tt> if this list contained the specified element
@@ -485,12 +464,14 @@ public class ArrayList<E> extends AbstractList<E>
     public boolean remove(Object o) {
         if (o == null) {
             for (int index = 0; index < size; index++)
+                // 列表是可以存放null的
                 if (elementData[index] == null) {
                     fastRemove(index);
                     return true;
                 }
         } else {
             for (int index = 0; index < size; index++)
+                // 只会删除匹配的索引最低的元素  后面如果有相同的元素就不会被删除了， 所以假如要删除干净  就用迭代器删除
                 if (o.equals(elementData[index])) {
                     fastRemove(index);
                     return true;
@@ -499,9 +480,9 @@ public class ArrayList<E> extends AbstractList<E>
         return false;
     }
 
-    /*
-     * Private remove method that skips bounds checking and does not
-     * return the value removed.
+    /**
+     * 私有移除方法，该方法跳过边界检查且不返回被移除的值。
+     * MARK: 这里也可以看出 移除效率低，需要所有元素左移，然后把最后一个元素设为null 等待GC
      */
     private void fastRemove(int index) {
         modCount++;
@@ -513,8 +494,8 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Removes all of the elements from this list.  The list will
-     * be empty after this call returns.
+     * 从列表中删除所有元素。该调用返回后，列表将为空。
+     * TODO 这里挺有意思 利用for循环将所有元素置为null   for循环效率要高于Iterator
      */
     public void clear() {
         modCount++;
@@ -527,14 +508,8 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Appends all of the elements in the specified collection to the end of
-     * this list, in the order that they are returned by the
-     * specified collection's Iterator.  The behavior of this operation is
-     * undefined if the specified collection is modified while the operation
-     * is in progress.  (This implies that the behavior of this call is
-     * undefined if the specified collection is this list, and this
-     * list is nonempty.)
-     *
+     * 将指定集合中的所有元素按照指定集合的迭代器返回它们的顺序追加到此列表的末尾。如果在操作过程中修改了指定的集合，则此操作的行为未定义。(这意味着，如果指定的集合是这个列表，而这个列表不是空的，则此调用的行为是未定义的。)
+     * MARK:迭代的时候不允许修改，不然迭代器会报错
      * @param c collection containing elements to be added to this list
      * @return <tt>true</tt> if this list changed as a result of the call
      * @throws NullPointerException if the specified collection is null
@@ -634,8 +609,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Removes from this list all of its elements that are contained in the
-     * specified collection.
+     * 从该列表中删除指定集合中包含的所有元素。
      *
      * @param c collection containing elements to be removed from this list
      * @return {@code true} if this list changed as a result of the call
@@ -649,14 +623,15 @@ public class ArrayList<E> extends AbstractList<E>
      * @see Collection#contains(Object)
      */
     public boolean removeAll(Collection<?> c) {
+        // 判空
         Objects.requireNonNull(c);
+
+        // 也是通过copy移动数组来实现
         return batchRemove(c, false);
     }
 
     /**
-     * Retains only the elements in this list that are contained in the
-     * specified collection.  In other words, removes from this list all
-     * of its elements that are not contained in the specified collection.
+     * 仅保留此列表中包含在指定集合中的元素。换句话说，从这个列表中删除指定集合中不包含的所有元素。
      *
      * @param c collection containing elements to be retained in this list
      * @return {@code true} if this list changed as a result of the call
@@ -674,6 +649,12 @@ public class ArrayList<E> extends AbstractList<E>
         return batchRemove(c, true);
     }
 
+    /**
+     * 批量移除
+     * @param c
+     * @param complement
+     * @return
+     */
     private boolean batchRemove(Collection<?> c, boolean complement) {
         final Object[] elementData = this.elementData;
         int r = 0, w = 0;
@@ -704,8 +685,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Save the state of the <tt>ArrayList</tt> instance to a stream (that
-     * is, serialize it).
+     * 序列化到流中
      *
      * @serialData The length of the array backing the <tt>ArrayList</tt>
      *             instance is emitted (int), followed by all of its elements

@@ -48,18 +48,28 @@ public class ArrayListTest implements Serializable {
 
 
 
-        List<Integer> list1 = new ArrayList<>();
+        ArrayList<Integer> list1 = new ArrayList<>();
         list1.add(1);
         list1.add(2);
         list1.add(3);
 
         Integer[] a = new Integer[]{5,6,7,8,9,0};
-        list1.toArray(a);
-
-        System.out.println(a);
+        Integer[] a1 = list1.toArray(a);
 
 
+        System.out.println(JSON.toJSONString(a));
+        System.out.println(JSON.toJSONString(a1));
 
+
+
+        Integer[] b = new Integer[]{5};
+        Integer[] b1 = list1.toArray(b);
+
+        System.out.println(JSON.toJSONString(b));
+
+        System.out.println(JSON.toJSONString(b1));
+
+        list1.ele
 
     }
 
