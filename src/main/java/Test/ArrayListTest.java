@@ -1,6 +1,7 @@
 package Test;
 
 import com.alibaba.fastjson.JSON;
+import com.sun.tools.classfile.Annotation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class ArrayListTest implements Serializable {
         System.out.println("objects1:" + objects);
 */
 
-
+/*
 
         ArrayList<Integer> list1 = new ArrayList<>();
         list1.add(1);
@@ -69,7 +70,16 @@ public class ArrayListTest implements Serializable {
 
         System.out.println(JSON.toJSONString(b1));
 
-        list1.ele
+   */
+
+    // foreach
+        ArrayList<Integer> list1 = new ArrayList<>();
+        list1.add(1);
+        list1.add(2);
+        list1.add(3);
+        list1.forEach(value ->System.out.println(value));
+
+
 
     }
 

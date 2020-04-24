@@ -768,9 +768,9 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Returns an iterator over the elements in this list in proper sequence.
-     *
-     * <p>The returned iterator is <a href="#fail-fast"><i>fail-fast</i></a>.
+     * 迭代器
+     * 该迭代器采用的是快速失败机制 fail-fast  也就是说是只读的，迭代时不允许修改
+     * java.util包下面的集合类都是 快速失败机制，不能在多线程下发生并发修改
      *
      * @return an iterator over the elements in this list in proper sequence
      */
@@ -849,7 +849,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * An optimized version of AbstractList.ListItr
+     * MARK: ListTtr 相比 itrator 增加了往前遍历、指定位置开始遍历 的方法
      */
     private class ListItr extends Itr implements ListIterator<E> {
         ListItr(int index) {
@@ -857,6 +857,7 @@ public class ArrayList<E> extends AbstractList<E>
             cursor = index;
         }
 
+        // 前面有没有元素
         public boolean hasPrevious() {
             return cursor != 0;
         }
@@ -865,6 +866,7 @@ public class ArrayList<E> extends AbstractList<E>
             return cursor;
         }
 
+        // 往前
         public int previousIndex() {
             return cursor - 1;
         }
@@ -910,30 +912,8 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Returns a view of the portion of this list between the specified
-     * {@code fromIndex}, inclusive, and {@code toIndex}, exclusive.  (If
-     * {@code fromIndex} and {@code toIndex} are equal, the returned list is
-     * empty.)  The returned list is backed by this list, so non-structural
-     * changes in the returned list are reflected in this list, and vice-versa.
-     * The returned list supports all of the optional list operations.
-     *
-     * <p>This method eliminates the need for explicit range operations (of
-     * the sort that commonly exist for arrays).  Any operation that expects
-     * a list can be used as a range operation by passing a subList view
-     * instead of a whole list.  For example, the following idiom
-     * removes a range of elements from a list:
-     * <pre>
-     *      list.subList(from, to).clear();
-     * </pre>
-     * Similar idioms may be constructed for {@link #indexOf(Object)} and
-     * {@link #lastIndexOf(Object)}, and all of the algorithms in the
-     * {@link Collections} class can be applied to a subList.
-     *
-     * <p>The semantics of the list returned by this method become undefined if
-     * the backing list (i.e., this list) is <i>structurally modified</i> in
-     * any way other than via the returned list.  (Structural modifications are
-     * those that change the size of this list, or otherwise perturb it in such
-     * a fashion that iterations in progress may yield incorrect results.)
+     * 返回指定的{@code fromIndex}(包含)和{@code toIndex}(排除)之间的列表部分的视图
+     * 对该视图做结构性修改会影响原列表
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws IllegalArgumentException {@inheritDoc}
@@ -1184,6 +1164,17 @@ public class ArrayList<E> extends AbstractList<E>
         }
     }
 
+    /**
+     * JDK8中的lambda 循环方法
+     * example:
+     * ArrayList<Integer> list1 = new ArrayList<>();
+     *         list1.add(1);
+     *         list1.add(2);
+     *         list1.add(3);
+     *         list1.forEach(value ->System.out.println(value));
+     *
+     * @param action
+     */
     @Override
     public void forEach(Consumer<? super E> action) {
         Objects.requireNonNull(action);
@@ -1194,6 +1185,7 @@ public class ArrayList<E> extends AbstractList<E>
         for (int i=0; modCount == expectedModCount && i < size; i++) {
             action.accept(elementData[i]);
         }
+        // mark 只有在遍历完了以后才会检测并发干扰
         if (modCount != expectedModCount) {
             throw new ConcurrentModificationException();
         }
